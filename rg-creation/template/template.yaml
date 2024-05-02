@@ -1,0 +1,106 @@
+
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: create-rg
+  title: Create a Resource Group And VNET
+  description: Create a Resource Group and VNET in Azure Subscription
+  tags: ['recommended']
+spec:
+  owner: guests
+  type: service
+  parameters:
+    - title: Resource Group And VNET Creation
+      required:
+         - ResourceGroupName
+         - Location
+         - VirtualNetworkName
+      properties:
+        ResourceGroupName:
+          title: Resource Group Name
+          type: string
+          description: Name of the Resource Group.
+          ui:autofocus: true
+          ui:options:
+            rows: 5
+
+        Location:
+          title:  Location
+          type: string
+          description: Location name where you want to create Resource Group and Virtual Network  eg:- eastus.
+
+        VirtualNetworkName:
+          title: Virtual Network Name
+          type: string
+          description: Name of the Virtual Network
+        action:
+          title: action
+          type: string
+          description: What action do you want to perform? Create or delete?
+          enum:
+            - apply
+            - destroy
+
+    - title: Choose a Repository Location
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Location of the repository
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+
+  steps:
+# Getting the all the files/details from the template
+    - id: fetch-base
+      name: Fetching Details from content folder
+      action: fetch:template
+      input:
+        url: https://github.com/lhind-tia-cop/backstage-idp-terraform/blob/main/content/catlog-info.yaml  # Location of the content directory where catlog-info.yaml file is present for the template
+        values:
+          name: ${{ parameters.ResourceGroupName}}
+
+# Publish the content of the current working directory to our github directory
+    - id: publish
+      name: Publishing Details
+      action: publish:github
+      input:
+        allowedHosts: ['github.com']
+        description: This repo is to create Resource Group Name ${{ parameters.ResourceGroupName }} using backstage.
+        repoUrl: ${{ parameters.repoUrl }}
+        repoVisibility: private # or 'internal' or 'private'
+        # defaultBranch: master
+
+# Triggering CI-CD to create resource in our case github action.
+    - id: github-action
+      name: Starting GitHub action
+      action: github:actions:dispatch
+      input:
+        workflowId: main.yml  # Name of the github pipeline created into .github/workflows 
+        repoUrl: 'github.com?owner=lhind-tia-cop&repo=backstage-idp-terraform' # Repo location where the github action build pipeline is created
+        branchOrTagName: 'main'
+        workflowInputs:
+          ResourceGroupName: ${{ parameters.ResourceGroupName }}
+          Location: ${{ parameters.Location }}
+          VirtualNetworkName: ${{ parameters.VirtualNetworkName }}
+          action: ${{ parameters.action }}
+
+# Registering new component in the catalog of backstage.
+    - id: register
+      name: Registering the new Component
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{steps['publish'].output.repoContentsUrl }}
+        catalogInfoUrl: https://github.com/lhind-tia-cop/backstage-idp-terraform/blob/main/content/catlog-info.yaml # where the info of the catalog is stored.
+
+# Output links  are displayed to the user after the template execution.
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps['publish'].output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps['register'].output.entityRef }}
