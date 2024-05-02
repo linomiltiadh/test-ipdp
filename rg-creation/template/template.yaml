@@ -5,7 +5,6 @@ metadata:
   name: create-rg
   title: Create a Resource Group And VNET
   description: Create a Resource Group and VNET in Azure Subscription
-  tags: ['recommended']
 spec:
   owner: guests
   type: service
@@ -15,6 +14,7 @@ spec:
          - ResourceGroupName
          - Location
          - VirtualNetworkName
+         - action
       properties:
         ResourceGroupName:
           title: Resource Group Name
@@ -23,12 +23,10 @@ spec:
           ui:autofocus: true
           ui:options:
             rows: 5
-
         Location:
           title:  Location
           type: string
           description: Location name where you want to create Resource Group and Virtual Network  eg:- eastus.
-
         VirtualNetworkName:
           title: Virtual Network Name
           type: string
@@ -54,14 +52,13 @@ spec:
               - github.com
 
   steps:
-# Getting the all the files/details from the template
-    # - id: fetch-base
-    #   name: Fetching Details from content folder
-    #   action: fetch:template
-    #   input:
-    #     url: https://github.com/lhind-tia-cop/backstage-idp-terraform/blob/main/content/catlog-info.yaml  # Location of the content directory where catlog-info.yaml file is present for the template
-    #     values:
-    #       name: ${{ parameters.ResourceGroupName}}
+    - id: fetch-base
+      name: Fetching Details from content folder
+      action: fetch:template
+      input:
+        url: ./template  # Location of the content directory where catlog-info.yaml file is present for the template
+        values:
+          name: ${{ parameters.ResourceGroupName}}
 
 # Publish the content of the current working directory to our github directory
     - id: publish
@@ -89,18 +86,18 @@ spec:
     #       action: ${{ parameters.action }}
 
 # Registering new component in the catalog of backstage.
-    # - id: register
-    #   name: Registering the new Component
-    #   action: catalog:register
-    #   input:
-    #     repoContentsUrl: ${{steps['publish'].output.repoContentsUrl }}
-    #     catalogInfoUrl: https://github.com/lhind-tia-cop/backstage-idp-terraform/blob/main/content/catlog-info.yaml # where the info of the catalog is stored.
+    - id: register
+      name: Registering the new Component
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{steps['publish'].output.repoContentsUrl }}
+        catalogInfoUrl: ./catalog-info.yaml # where the info of the catalog is stored.
 
 # Output links  are displayed to the user after the template execution.
-  output:
-    links:
-      - title: Repository
-        url: ${{ steps['publish'].output.remoteUrl }}
+  # output:
+  #   links:
+  #     - title: Repository
+  #       url: ${{ steps['publish'].output.remoteUrl }}
       # - title: Open in catalog
       #   icon: catalog
       #   entityRef: ${{ steps['register'].output.entityRef }}
