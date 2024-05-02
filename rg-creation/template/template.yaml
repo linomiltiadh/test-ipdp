@@ -6,7 +6,7 @@ metadata:
   title: Create a Resource Group And VNET
   description: Create a Resource Group and VNET in Azure Subscription
 spec:
-  owner: guests
+  owner: user:guest
   type: service
   parameters:
     - title: Resource Group And VNET Creation
@@ -56,7 +56,7 @@ spec:
       name: Fetching Details from content folder
       action: fetch:template
       input:
-        url: ./template  # Location of the content directory where catlog-info.yaml file is present for the template
+        url: ../content  # Location of the content directory where catlog-info.yaml file is present for the template
         values:
           name: ${{ parameters.ResourceGroupName}}
 
@@ -94,10 +94,10 @@ spec:
         catalogInfoUrl: ./catalog-info.yaml # where the info of the catalog is stored.
 
 # Output links  are displayed to the user after the template execution.
-  # output:
-  #   links:
-  #     - title: Repository
-  #       url: ${{ steps['publish'].output.remoteUrl }}
-      # - title: Open in catalog
-      #   icon: catalog
-      #   entityRef: ${{ steps['register'].output.entityRef }}
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps['publish'].output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps['register'].output.entityRef }}
