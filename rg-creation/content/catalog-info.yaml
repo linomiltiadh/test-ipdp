@@ -1,7 +1,7 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: ${{ values.name | dump }}
+  name: test
   title: 'Infrastructure Automation' # you can give any title
   description: An example of a Resource Group. # Change Description accordingly
 spec:
