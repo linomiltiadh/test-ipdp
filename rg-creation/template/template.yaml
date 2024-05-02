@@ -57,8 +57,9 @@ spec:
       action: fetch:template
       input:
         url: ../content  # Location of the content directory where catlog-info.yaml file is present for the template
+        cookiecutterCompat: true
         values:
-          name: ${{ parameters.ResourceGroupName}}
+          ResourceGroupName: ${{ parameters.ResourceGroupName}}
 
 # Publish the content of the current working directory to our github directory
     - id: publish
